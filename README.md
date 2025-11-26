@@ -1,7 +1,10 @@
 # crafts
 
 A new Flutter project.
-
+## Compress build flutter apk 
+flutter build apk --release --split-per-abi
+## Compress build flutter IOS 
+flutter build ios --release --split-per-abi
 ## Getting Started
 
 This project is a starting point for a Flutter application.
