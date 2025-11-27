@@ -1,13 +1,15 @@
 import 'package:crafts/screens/aadhaar_verification_screen.dart';
+import 'package:crafts/screens/welcome_back_screen.dart';
 import 'package:crafts/widgets/reusable_logo_uploader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../logic/cubit/profile/profile_cubit.dart';
-
+import 'dart:io';
 import '../widgets/input/app_input.dart';
 import '../widgets/input/app_dropdown.dart';
 import '../widgets/input/social_input.dart';
 import '../widgets/input/gender_selector.dart';
+import 'package:image_picker/image_picker.dart';
 
 class CompleteProfileScreen extends StatefulWidget {
   const CompleteProfileScreen({super.key});
@@ -26,9 +28,18 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
   final linkedCtrl = TextEditingController();
 
   Future pickImage() async {
-    setState(() {
-      galleryImages.add("sample.jpg");
-    });
+    final ImagePicker picker = ImagePicker();
+
+    // setState(() {
+    //   galleryImages.add("sample.jpg");
+    // });
+    final XFile? file = await picker.pickImage(source: ImageSource.gallery);
+
+    if (file != null) {
+      setState(() {
+        galleryImages.add(file.path); // store actual path
+      });
+    }
   }
 
   @override
@@ -177,17 +188,52 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                     spacing: 12,
                     runSpacing: 12,
                     children: [
-                      ...galleryImages.map(
-                        (e) => ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: Container(
-                            width: 100,
-                            height: 100,
-                            color: Colors.grey.shade300,
-                            child: const Icon(Icons.image, size: 32),
-                          ),
-                        ),
-                      ),
+                      // show uploaded images
+                      ...galleryImages.asMap().entries.map((entry) {
+                        final index = entry.key;
+                        final path = entry.value;
+
+                        return Stack(
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: Image.file(
+                                File(path),
+                                width: 100,
+                                height: 100,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+
+                            // ❌ DELETE BUTTON ON TOP-RIGHT
+                            Positioned(
+                              right: 4,
+                              top: 4,
+                              child: GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    galleryImages.removeAt(index);
+                                  });
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.all(3),
+                                  decoration: const BoxDecoration(
+                                    color: Colors.red,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.close,
+                                    color: Colors.white,
+                                    size: 16,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        );
+                      }),
+
+                      // ➕ ADD NEW IMAGE BOX
                       GestureDetector(
                         onTap: pickImage,
                         child: Container(
@@ -286,7 +332,41 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                     ],
                   ),
 
-                  const SizedBox(height: 40),
+                  const SizedBox(height: 20),
+
+                  Center(
+                    child: SizedBox(
+                      width: 180,
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => WelcomeBackScreen(),
+                          ),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          backgroundColor: Colors.red, // 🔴 Red background
+                          side: BorderSide.none, // Remove border
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(
+                              40,
+                            ), // 🔥 OVAL / PILL SHAPE
+                          ),
+                        ),
+                        child: const Text(
+                          "Logout",
+                          style: TextStyle(
+                            color: Colors.white, // ⚪ White text
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 30),
                 ],
               ),
             );
