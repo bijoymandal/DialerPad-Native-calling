@@ -1,4 +1,5 @@
 // lib/widgets/common/profile_app_bar.dart
+import 'package:crafts/screens/profile/my_profile_screen.dart';
 import 'package:crafts/widgets/common/notification_button.dart';
 import 'package:crafts/widgets/complete_profile_screen.dart';
 import 'package:flutter/material.dart';
@@ -11,7 +12,7 @@ class ProfileAppBar extends StatelessWidget implements PreferredSizeWidget {
       PageRouteBuilder(
         transitionDuration: const Duration(milliseconds: 600),
         pageBuilder: (_, animation, __) {
-          return const CompleteProfileScreen();
+          return const MyProfileScreen();
         },
         transitionsBuilder: (_, animation, __, child) {
           return FadeTransition(
