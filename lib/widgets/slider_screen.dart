@@ -1,6 +1,5 @@
 import 'package:crafts/widgets/complete_profile_screen.dart';
 import 'package:flutter/material.dart';
-// import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 class SliderScreen extends StatefulWidget {
   const SliderScreen({super.key});
@@ -31,6 +30,7 @@ class _SliderScreenState extends State<SliderScreen> {
     },
   ];
 
+  // NEXT BUTTON LOGIC
   void nextPage() {
     if (_currentPage < slides.length - 1) {
       _controller.nextPage(
@@ -38,8 +38,10 @@ class _SliderScreenState extends State<SliderScreen> {
         curve: Curves.easeInOut,
       );
     } else {
-      // last page → navigate or close onboarding
-      Navigator.pop(context);
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const CompleteProfileScreen()),
+      );
     }
   }
 
@@ -94,7 +96,6 @@ class _SliderScreenState extends State<SliderScreen> {
 
                       const SizedBox(height: 10),
 
-                      /// Subtitle + Skip (NO GAP)
                       Column(
                         children: [
                           Text(
@@ -106,11 +107,11 @@ class _SliderScreenState extends State<SliderScreen> {
                             ),
                           ),
 
-                          /// Skip (immediately under subtitle)
                           Row(
                             children: [
                               const Expanded(child: SizedBox()),
 
+                              // SKIP BUTTON
                               SizedBox(
                                 width: 100,
                                 child: GestureDetector(
@@ -121,7 +122,6 @@ class _SliderScreenState extends State<SliderScreen> {
                                           const CompleteProfileScreen(),
                                     ),
                                   ),
-
                                   child: const Text(
                                     "Skip",
                                     textAlign: TextAlign.center,
@@ -134,7 +134,8 @@ class _SliderScreenState extends State<SliderScreen> {
                                 ),
                               ),
 
-                              const Expanded(
+                              // NEXT BUTTON
+                              Expanded(
                                 child: Align(
                                   alignment: Alignment.centerRight,
                                   child: _NextButton(),
@@ -144,34 +145,19 @@ class _SliderScreenState extends State<SliderScreen> {
                           ),
                         ],
                       ),
-                      // const SizedBox(height: 10),
                     ],
                   ),
                 );
               },
             ),
           ),
-
-          /// Smooth Indicator
-          // SmoothPageIndicator(
-          //   controller: _controller,
-          //   count: slides.length,
-          //   effect: WormEffect(
-          //     dotHeight: 10,
-          //     dotWidth: 22,
-          //     radius: 12,
-          //     spacing: 8,
-          //     dotColor: Colors.grey.shade300,
-          //     activeDotColor: Colors.deepPurple,
-          //   ),
-          // ),
-          // const SizedBox(height: 25),
         ],
       ),
     );
   }
 }
 
+// NEXT BUTTON WIDGET
 class _NextButton extends StatelessWidget {
   const _NextButton();
 
@@ -180,7 +166,7 @@ class _NextButton extends StatelessWidget {
     return GestureDetector(
       onTap: () {
         final parent = context.findAncestorStateOfType<_SliderScreenState>();
-        parent?.nextPage();
+        parent?.nextPage(); // Works perfectly now
       },
       child: Container(
         padding: const EdgeInsets.all(10),
