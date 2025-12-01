@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter/services.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_state.dart';
 
@@ -19,7 +20,12 @@ class PhoneInput extends StatelessWidget {
         BlocBuilder<AuthBloc, AuthState>(
           builder: (context, state) {
             return TextFormField(
-              keyboardType: TextInputType.phone,
+              keyboardType: TextInputType.number,
+              maxLength: 10,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                LengthLimitingTextInputFormatter(10),
+              ],
               onChanged: (v) => context.read<AuthBloc>().updatePhoneNumber(v),
               decoration: InputDecoration(
                 prefixText: '+91  ',
