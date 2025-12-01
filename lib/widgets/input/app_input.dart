@@ -12,6 +12,8 @@ class AppInput extends StatelessWidget {
   final Widget? suffixIcon;
   final Widget? prefixIcon;
   final bool obscureText;
+  final bool enabled;
+  final bool readOnly;
   final String? Function(String?)? validator;
 
   const AppInput({
@@ -25,6 +27,8 @@ class AppInput extends StatelessWidget {
     this.suffixIcon,
     this.prefixIcon,
     this.obscureText = false,
+    this.enabled = true,
+    this.readOnly = false,
     this.validator,
   });
 
@@ -48,6 +52,8 @@ class AppInput extends StatelessWidget {
           obscureText: obscureText,
           maxLength: maxLength,
           inputFormatters: inputFormatters,
+          enabled: enabled,
+          readOnly: readOnly || !enabled,
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: const TextStyle(color: Colors.grey),
