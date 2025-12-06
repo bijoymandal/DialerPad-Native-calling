@@ -3,12 +3,12 @@ import 'package:crafts/widgets/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../widgets/input/app_input.dart';
-import 'package:flutter/gestures.dart'; // Added for TapGestureRecognizer
+import 'package:flutter/gestures.dart';
 
 class AadhaarVerificationScreen extends StatefulWidget {
-  const AadhaarVerificationScreen({super.key});
+  final String phoneNumber; // Required phone number from previous screen
 
-  // const AadhaarVerificationScreen({super.key});
+  const AadhaarVerificationScreen({super.key, required this.phoneNumber});
 
   @override
   State<AadhaarVerificationScreen> createState() =>
@@ -40,21 +40,28 @@ class _AadhaarVerificationScreenState extends State<AadhaarVerificationScreen> {
     super.dispose();
   }
 
-  void _verifyAadhaar() {
+  void _verifyAadhaar() async {
     if (!_isButtonEnabled) return;
 
     setState(() => _isLoading = true);
 
-    Future.delayed(const Duration(seconds: 2), () {
-      if (!mounted) return;
-      setState(() => _isLoading = false);
+    // Simulate API call
+    await Future.delayed(const Duration(seconds: 2));
 
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (_) => const HomeScreen(initialIndex: 2)),
-        (route) => false,
-      );
-    });
+    if (!mounted) return;
+    setState(() => _isLoading = false);
+
+    // Navigate to Home after successful Aadhaar verification
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(
+        builder: (_) => HomeScreen(
+          initialIndex: 2,
+          number: widget.phoneNumber, // Now correctly passed
+        ),
+      ),
+      (route) => false,
+    );
   }
 
   @override
@@ -99,13 +106,13 @@ class _AadhaarVerificationScreenState extends State<AadhaarVerificationScreen> {
                         child: Icon(
                           Icons.credit_card,
                           size: 40,
-                          color: Color(0xFF9C27B0),
+                          color: const Color(0xFF9C27B0),
                         ),
                       ),
                       const SizedBox(width: 16),
-                      Column(
+                      const Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
+                        children: [
                           Text(
                             "KYC Verification",
                             style: TextStyle(
@@ -126,12 +133,10 @@ class _AadhaarVerificationScreenState extends State<AadhaarVerificationScreen> {
                     ],
                   ),
                   const SizedBox(height: 16),
-                  LinearProgressIndicator(
+                  const LinearProgressIndicator(
                     value: 1.0,
                     backgroundColor: Colors.white24,
-                    valueColor: const AlwaysStoppedAnimation<Color>(
-                      Colors.white,
-                    ),
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                   ),
                 ],
               ),
@@ -158,9 +163,9 @@ class _AadhaarVerificationScreenState extends State<AadhaarVerificationScreen> {
                     ),
                   ),
                   const SizedBox(width: 16),
-                  Expanded(
-                    child: RichText(
-                      text: const TextSpan(
+                  const Expanded(
+                    child: Text.rich(
+                      TextSpan(
                         style: TextStyle(color: Colors.black87, fontSize: 14),
                         children: [
                           TextSpan(
@@ -180,7 +185,7 @@ class _AadhaarVerificationScreenState extends State<AadhaarVerificationScreen> {
             ),
             const SizedBox(height: 30),
 
-            // Aadhaar Input using AppInput (no keyboardType if not supported)
+            // Aadhaar Input
             AppInput(
               label: "Aadhaar Number",
               hint: "1234 5678 9012",
@@ -206,23 +211,28 @@ class _AadhaarVerificationScreenState extends State<AadhaarVerificationScreen> {
               value: _consentKyc,
               onChanged: (v) => setState(() => _consentKyc = v!),
               title:
-                  "I hereby give my consent to fetch my KYC information from UIDAI for the purpose of account verification and compliance with regulatory requirements.",
+                  "I hereby give my consent to fetch my KYC information from UIDAI for account verification.",
             ),
             const SizedBox(height: 16),
 
-            // Consent 2 with clickable link
+            // Consent 2 with link
             _buildConsentTile(
               value: _consentTerms,
               onChanged: (v) => setState(() => _consentTerms = v!),
               title: "I agree to the ",
               linkText: "Terms & Conditions and Privacy Policy",
               onTapLink: () {
-                // Open terms
+                // TODO: Open Terms & Privacy Policy
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text("Opening Terms & Conditions..."),
+                  ),
+                );
               },
             ),
             const SizedBox(height: 40),
 
-            // Smart Verify Button
+            // Verify Button
             SizedBox(
               width: double.infinity,
               height: 56,
@@ -247,7 +257,6 @@ class _AadhaarVerificationScreenState extends State<AadhaarVerificationScreen> {
                       ? const Color(0xFF9C27B0)
                       : Colors.grey.shade400,
                   foregroundColor: Colors.white,
-                  disabledBackgroundColor: Colors.grey.shade300,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
                   ),
@@ -279,7 +288,7 @@ class _AadhaarVerificationScreenState extends State<AadhaarVerificationScreen> {
             ),
             const SizedBox(height: 30),
 
-            // Need Help?
+            // Help Section
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
@@ -320,12 +329,12 @@ class _AadhaarVerificationScreenState extends State<AadhaarVerificationScreen> {
             const SizedBox(height: 30),
 
             // Footer
-            Row(
+            const Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.check_circle, color: Colors.green, size: 20),
-                const SizedBox(width: 8),
-                const Text(
+                Icon(Icons.check_circle, color: Colors.green, size: 20),
+                SizedBox(width: 8),
+                Text(
                   "Secured by 256-bit SSL encryption",
                   style: TextStyle(fontSize: 14),
                 ),
@@ -338,7 +347,6 @@ class _AadhaarVerificationScreenState extends State<AadhaarVerificationScreen> {
     );
   }
 
-  // Fixed Consent Tile
   Widget _buildConsentTile({
     required bool value,
     required Function(bool?) onChanged,
@@ -384,7 +392,6 @@ class _AadhaarVerificationScreenState extends State<AadhaarVerificationScreen> {
     );
   }
 
-  // Security Card
   Widget _securityCard(IconData icon, String text, Color color) {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -413,7 +420,6 @@ class _AadhaarVerificationScreenState extends State<AadhaarVerificationScreen> {
     );
   }
 
-  // Help Tile
   Widget _helpTile(IconData icon, String title) {
     return Row(
       children: [

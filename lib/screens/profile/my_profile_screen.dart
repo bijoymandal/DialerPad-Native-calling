@@ -5,7 +5,15 @@ import '../../bloc/profile/profile_bloc.dart';
 import '../../models/user_model.dart';
 
 class MyProfileScreen extends StatelessWidget {
-  const MyProfileScreen({super.key});
+  final String number;
+  final String otp;
+  final UserModel? existingUser;
+  const MyProfileScreen({
+    super.key,
+    required this.number,
+    required this.otp,
+    this.existingUser,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +52,12 @@ class MyProfileScreen extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 60,
-                backgroundImage: NetworkImage(user.avatarUrl),
+                backgroundImage: user.profilePhotoUrl.isNotEmpty
+                    ? NetworkImage(user.profilePhotoUrl)
+                    : null,
+                child: user.profilePhotoUrl.isEmpty
+                    ? const Icon(Icons.person, size: 70, color: Colors.grey)
+                    : null,
               ),
               Positioned(
                 bottom: 0,
@@ -66,7 +79,7 @@ class MyProfileScreen extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            user.name,
+            user.firstName,
             style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
           ),
           Text(user.email, style: const TextStyle(color: Colors.grey)),
@@ -106,25 +119,50 @@ class MyProfileScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          _detailRow("Aadhar Number", "**** **** ${user.aadharLast4}"),
+          // _detailRow("Aadhar Number", "**** **** "),
           _detailRow("Phone Number", user.phone),
-          _detailRow("Alternate Phone", user.alternatePhone),
-          _detailRow("MAA Association", user.maaAssociation),
-          _detailRow("Gender", user.gender),
-          _detailRow("Department", user.department),
-          _detailRow("Company Name", user.companyName),
-          _detailRow("Company Email", user.companyEmail),
-          _detailRow("Company Phone", user.companyPhone),
-          _detailRow("Address", user.address, isLast: true),
+          _detailRow("Role", user.role),
+          // _detailRow("MAA Association", user.maaAssociation),
+          // _detailRow("Gender", user.gender),
+          // _detailRow("Department", user.department),
+          // _detailRow("Company Name", user.companyName),
+          // _detailRow("facebook", user.socialLinks.map()),
+          // _detailRow("Company Phone", user.companyPhone),
+          // _detailRow("Address", user.address, isLast: true),
           const SizedBox(height: 40),
-
+          // Social Links
+          if (user.socialLinks.isNotEmpty) ...[
+            const Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                "Social Links",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ),
+            const SizedBox(height: 10),
+            ...user.socialLinks.map(
+              (link) => ListTile(
+                leading: _getPlatformIcon(link.platform),
+                title: Text(link.platform.capitalize()),
+                // subtitle: Text(link.url),
+                // trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                onTap: () {
+                  // launchUrlString(link.url);
+                },
+              ),
+            ),
+          ],
           // EDIT PROFILE BUTTON – SMOOTH ANIMATED
           ElevatedButton.icon(
             onPressed: () {
               Navigator.of(context).push(
                 PageRouteBuilder(
                   transitionDuration: const Duration(milliseconds: 500),
-                  pageBuilder: (_, __, ___) => CompleteProfileScreen(),
+                  pageBuilder: (_, __, ___) => CompleteProfileScreen(
+                    phoneNumber: number,
+                    otp: "",
+                    existingUser: user,
+                  ),
                   transitionsBuilder: (_, animation, __, child) {
                     return SlideTransition(
                       position:
@@ -210,5 +248,29 @@ class MyProfileScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Widget _getPlatformIcon(String platform) {
+    switch (platform.toLowerCase()) {
+      case 'instagram':
+        return const Icon(Icons.camera_alt, color: Colors.pink);
+      case 'facebook':
+        return const Icon(Icons.facebook, color: Colors.blue);
+      case 'twitter':
+      case 'x':
+        return const Icon(Icons.chat, color: Colors.black);
+      case 'youtube':
+        return const Icon(Icons.play_circle_fill, color: Colors.red);
+      case 'website':
+        return const Icon(Icons.language, color: Colors.purple);
+      default:
+        return const Icon(Icons.link, color: Colors.grey);
+    }
+  }
+}
+
+extension StringExtension on String {
+  String capitalize() {
+    return "${this[0].toUpperCase()}${substring(1)}";
   }
 }

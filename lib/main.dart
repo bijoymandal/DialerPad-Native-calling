@@ -1,5 +1,9 @@
+// main.dart
+
+import 'package:crafts/bloc/profile/profile_bloc.dart';
+import 'package:crafts/screens/welcome_back_screen.dart';
 import 'package:flutter/material.dart';
-import 'screens/welcome_back_screen.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -10,19 +14,28 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Crafts',
-      navigatorKey: navigatorKey,
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primarySwatch: Colors.purple,
-        fontFamily: 'Poppins', // Optional: add Google Font
-        useMaterial3: true,
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (context) =>
+              ProfileBloc()
+                ..add(LoadProfile()), // initial load (will be updated on login)
+        ),
+        // Add more blocs here later if needed
+      ],
+      child: MaterialApp(
+        title: 'Crafts',
+        navigatorKey: navigatorKey,
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          primarySwatch: Colors.purple,
+          fontFamily: 'Poppins',
+          useMaterial3: true,
+        ),
+        home: const WelcomeBackScreen(),
       ),
-      home: const WelcomeBackScreen(),
     );
   }
 }

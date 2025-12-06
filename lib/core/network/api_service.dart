@@ -44,7 +44,7 @@ class ApiService {
   // -----------------------------
   static Future<Map<String, dynamic>> completeSignup({
     required String phone,
-    required String otp,
+    required String? otp,
     required String firstName,
     required String lastName,
     required String email,
@@ -85,7 +85,7 @@ class ApiService {
 
       request.fields.addAll({
         "phone": phone,
-        "otp": otp,
+        "otp": otp ?? "",
         "firstName": firstName,
         "lastName": lastName,
         "email": email,
@@ -190,4 +190,6 @@ class ApiService {
       throw Exception("Failed to load profile");
     }
   }
+
+  //profile update
 }

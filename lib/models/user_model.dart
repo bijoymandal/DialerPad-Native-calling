@@ -1,52 +1,123 @@
-// lib/models/user_model.dart
+// models/user_model.dart
+
 class UserModel {
-  final String name;
-  final String email;
+  final String id;
   final String phone;
-  final String aadharLast4;
-  final String alternatePhone;
-  final String maaAssociation;
-  final String gender;
-  final String department;
-  final String companyName;
-  final String companyEmail;
-  final String companyPhone;
-  final String address;
-  final bool isKycVerified;
-  final String avatarUrl;
+  final String email;
+  final String firstName;
+  final String lastName;
+  final String? alternatePhone;
+  final String? maaAssociation;
+  final String? companyName;
+  final String? companyAddress;
+  final String? companyPhone;
+  final String? city;
+  final String? website;
+  final String? facebook;
+  final String? instagram;
+  final String? linkedIn;
+  final String profilePhotoUrl;
+  final String role;
+  final bool isPremium;
+  final String? gender;
+  final String? department;
+  final String? indiaState;
+  final List<SocialLink> socialLinks;
 
   UserModel({
-    required this.name,
-    required this.email,
+    required this.id,
     required this.phone,
-    required this.aadharLast4,
-    required this.alternatePhone,
-    required this.maaAssociation,
-    required this.gender,
-    required this.department,
-    required this.companyName,
-    required this.companyEmail,
-    required this.companyPhone,
-    required this.address,
-    required this.isKycVerified,
-    required this.avatarUrl,
+    required this.email,
+    required this.firstName,
+    required this.lastName,
+    this.alternatePhone,
+    this.maaAssociation,
+    this.companyName,
+    this.companyAddress,
+    this.companyPhone,
+    this.city,
+    this.website,
+    this.facebook,
+    this.instagram,
+    this.linkedIn,
+    required this.profilePhotoUrl,
+    required this.role,
+    required this.isPremium,
+    this.gender,
+    this.department,
+    this.indiaState,
+    required this.socialLinks,
   });
 
-  // Dummy data (replace with real API later)
-  static UserModel dummy = UserModel(
-    name: "Pavan Vijay Kumar",
-    email: "p1dntne@gmail.com",
-    phone: "+91 8297808410",
-    aadharLast4: "8765",
-    alternatePhone: "8887779990",
-    maaAssociation: "MAA2314",
-    gender: "Male",
-    department: "Director, Producer",
-    companyName: "NighaTech",
-    companyEmail: "NighaTechs@gmail.com",
-    companyPhone: "3399887721",
-    address: "123, MG Road, Sector 15, Gurugram, Haryana - 122001",
-    isKycVerified: true,
-    avatarUrl: "https://randomuser.me/api/portraits/men/86.jpg",
-  );
+  factory UserModel.fromAuthResponse(Map<String, dynamic> json) {
+    final user = json["user"];
+    final profile = json["profile"];
+    final List<dynamic> linksJson = json['socialLinks'] ?? [];
+    return UserModel(
+      id: user["id"],
+      phone: user["phone"] ?? "",
+      email: user["email"] ?? "",
+      role: user["role"] ?? "",
+      firstName: user["firstName"] ?? profile["first_name"] ?? "User",
+      lastName: user["lastName"] ?? profile["last_name"] ?? "",
+      alternatePhone: user["alternatePhone"] ?? "",
+      maaAssociation: user["maaAssociation"] ?? "",
+      companyName: user["companyName"] ?? "",
+      companyAddress: user["companyAddress"] ?? "",
+      companyPhone: user["companyPhone"] ?? "",
+      profilePhotoUrl: profile["profile_photo_url"] ?? "",
+      isPremium: profile["is_premium"] == true,
+      socialLinks: linksJson.map((e) => SocialLink.fromJson(e)).toList(),
+    );
+  }
+
+  // Optional: fromJson for local storage
+  // factory UserModel.fromJson(Map<String, dynamic> json) {
+  //   return UserModel(
+  //     id: json["id"],
+  //     phone: json["phone"],
+  //     email: json["email"],
+  //     role: json["role"],
+  //     firstName: json["firstName"],
+  //     lastName: json["lastName"],
+
+  //     profilePhotoUrl: json["profilePhotoUrl"] ?? "",
+  //     isPremium: json["isPremium"],
+  //     socialLinks: linksJson.map((e) => SocialLink.fromJson(e)).toList(),
+  //   );
+  // }
+
+  Map<String, dynamic> toJson() => {
+    "id": id,
+    "phone": phone,
+    "email": email,
+    "role": role,
+    "firstName": firstName,
+    "lastName": lastName,
+    "alternatePhone": alternatePhone,
+    "maaAssociation": maaAssociation,
+
+    "profilePhotoUrl": profilePhotoUrl,
+    "isPremium": isPremium,
+  };
+}
+
+class SocialLink {
+  final String platform;
+  final String url;
+  final bool isCustom;
+
+  SocialLink({
+    required this.platform,
+    required this.url,
+    required this.isCustom,
+  });
+
+  factory SocialLink.fromJson(Map<String, dynamic> json) {
+    return SocialLink(
+      platform: json['platform']?.toString() ?? '',
+      url: json['url']?.toString() ?? '',
+      isCustom: json['is_custom'] == true,
+    );
+  }
 }

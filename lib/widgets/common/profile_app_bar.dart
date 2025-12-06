@@ -1,38 +1,61 @@
 // lib/widgets/common/profile_app_bar.dart
+
+import 'package:crafts/core/storage/secure_storage.dart';
 import 'package:crafts/screens/profile/my_profile_screen.dart';
+import 'package:crafts/screens/welcome_back_screen.dart';
 import 'package:crafts/widgets/common/notification_button.dart';
-import 'package:crafts/widgets/complete_profile_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../bloc/profile/profile_bloc.dart';
 
 class ProfileAppBar extends StatelessWidget implements PreferredSizeWidget {
-  const ProfileAppBar({super.key});
+  final String number;
 
+  const ProfileAppBar({super.key, required this.number});
+
+  @override
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+
+  /// OPEN PROFILE SCREEN
   void _openProfile(BuildContext context) {
     Navigator.of(context).push(
-      PageRouteBuilder(
-        transitionDuration: const Duration(milliseconds: 600),
-        pageBuilder: (_, animation, __) {
-          return const MyProfileScreen();
-        },
-        transitionsBuilder: (_, animation, __, child) {
-          return FadeTransition(
-            opacity: animation,
-            child: SlideTransition(
-              position:
-                  Tween<Offset>(
-                    begin: const Offset(0, 0.1),
-                    end: Offset.zero,
-                  ).animate(
-                    CurvedAnimation(
-                      parent: animation,
-                      curve: Curves.easeOutCubic,
-                    ),
-                  ),
-              child: child,
-            ),
-          );
-        },
+      MaterialPageRoute(
+        builder: (context) => MyProfileScreen(number: number, otp: ""),
       ),
+    );
+  }
+
+  /// LOGOUT LOGIC
+  Future<void> _logout(BuildContext context) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text("Logout"),
+        content: const Text("Are you sure you want to logout?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text("Cancel"),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text("Logout", style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    await SecureStorage.clearAll();
+
+    // CLEAR PROFILE BLOC
+    context.read<ProfileBloc>().emit(ProfileLoading());
+
+    // GO TO LOGIN / WELCOME SCREEN
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const WelcomeBackScreen()),
+      (route) => false,
     );
   }
 
@@ -41,52 +64,68 @@ class ProfileAppBar extends StatelessWidget implements PreferredSizeWidget {
     return AppBar(
       backgroundColor: const Color(0xFF9C27B0),
       elevation: 0,
+
       title: InkWell(
         onTap: () => _openProfile(context),
-        borderRadius: BorderRadius.circular(50),
-        child: Row(
-          children: [
-            Hero(
-              tag: 'user_avatar_hero',
-              child: CircleAvatar(
-                radius: 20,
-                backgroundImage: const AssetImage(
-                  'assets/images/user_avatar.jpg',
-                ),
-                onBackgroundImageError: (_, __) => Container(
-                  decoration: const BoxDecoration(
-                    color: Colors.white24,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(Icons.person, color: Colors.white70),
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            const Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+        child: BlocBuilder<ProfileBloc, ProfileState>(
+          builder: (context, state) {
+            String name = "Guest User";
+            String role = "Member";
+
+            if (state is ProfileLoaded) {
+              final user = state.user;
+
+              name = "${user.firstName ?? ''} ${user.lastName ?? ''}".trim();
+              if (name.isEmpty) name = "User";
+
+              if (user.role != null && user.role!.isNotEmpty) {
+                role = user.role![0].toUpperCase() + user.role!.substring(1);
+              }
+            }
+
+            return Row(
               children: [
-                Text(
-                  "Sarah Johnson",
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
+                const CircleAvatar(
+                  radius: 20,
+                  backgroundImage: AssetImage("assets/images/user_avatar.jpg"),
                 ),
-                Text(
-                  "Film Producer",
-                  style: TextStyle(fontSize: 13, color: Colors.white70),
+                const SizedBox(width: 12),
+
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      name,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      role,
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
                 ),
               ],
-            ),
-          ],
+            );
+          },
         ),
       ),
-      actions: [const NotificationButton(), const SizedBox(width: 8)],
+
+      actions: [
+        const NotificationButton(),
+        IconButton(
+          onPressed: () => _logout(context),
+          icon: const Icon(Icons.logout, color: Colors.white),
+          tooltip: "Logout",
+        ),
+        const SizedBox(width: 8),
+      ],
     );
   }
-
-  @override
-  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 }
