@@ -52,12 +52,14 @@ class UserModel {
   factory UserModel.fromAuthResponse(Map<String, dynamic> json) {
     final user = json["user"];
     final profile = json["profile"];
+    print(profile);
+
     final List<dynamic> linksJson = json['socialLinks'] ?? [];
     return UserModel(
       id: user["id"],
-      phone: user["phone"] ?? "",
+      phone: "+91 ${user["phone"] ?? ""}",
       email: user["email"] ?? "",
-      role: user["role"] ?? "",
+      role: profile["role"] ?? "",
       firstName: user["firstName"] ?? profile["first_name"] ?? "User",
       lastName: user["lastName"] ?? profile["last_name"] ?? "",
       alternatePhone: user["alternatePhone"] ?? "",

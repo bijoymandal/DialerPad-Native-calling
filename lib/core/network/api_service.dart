@@ -93,8 +93,11 @@ class ApiService {
         "department": department,
         "state": indiaState,
         "city": city,
-        "companyName": companyName,
-        "role": "user",
+
+        // Required by backend
+        "role": role ?? "user",
+        "aadharNumber":
+            "0000000000000000", // 🔥 Must be 16 digits or backend rejects
       });
 
       // Optional fields

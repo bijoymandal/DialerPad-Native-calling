@@ -34,12 +34,12 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     emit(ProfileLoading());
     try {
       final response = await ApiService.getProfile();
-
       // Save basic user data
       await SecureStorage.saveUserData({
         "id": response["user"]["id"],
         "phone": response["user"]["phone"],
         "email": response["user"]["email"] ?? "",
+        "profile_id": response["profile"]["id"],
         "firstName": response["profile"]["first_name"] ?? "",
         "lastName": response["profile"]["last_name"] ?? "",
         "profilePhotoUrl": response["profile"]["profile_photo_url"],

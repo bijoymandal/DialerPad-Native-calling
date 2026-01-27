@@ -7,7 +7,7 @@ class SignUpFooter extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextButton(
       onPressed: () {
-        // Navigator.push(context, MaterialPageRoute(builder: (_) => SignUpScreen()));
+        // Navigator.push(context, MaterialPageRoute(builder: (_) => SignUpScree()));
       },
       child: const Text.rich(
         TextSpan(

@@ -127,6 +127,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
     // Pre-fill form if editing existing profile
     if (widget.existingUser != null) {
       final user = widget.existingUser!;
+
       form.firstName.text = user.firstName ?? '';
       form.lastName.text = user.lastName ?? '';
       form.email.text = user.email ?? '';
@@ -141,12 +142,10 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
       form.instragram.text = user.instagram ?? '';
       form.linkedIn.text = user.linkedIn ?? '';
 
-      gender:
-      user.gender ?? "Male";
-      department:
-      user.department ?? "Others";
-      indiaState:
-      user.indiaState ?? "Delhi";
+      // ✔ FIXED: correct assignment
+      gender = user.gender ?? "Male";
+      department = user.department ?? "Others";
+      indiaState = user.indiaState ?? "Delhi";
     }
   }
 
@@ -172,26 +171,19 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
   }
 
   bool _validate() {
-    final v = form.values;
+    if (form.firstName.text.isEmpty) return _error("First Name is required");
+    if (form.lastName.text.isEmpty) return _error("Last Name is required");
 
-    if (v['firstName']?.isEmpty ?? true) {
-      return _error("First Name is required");
-    }
-    if (v['lastName']?.isEmpty ?? true) return _error("Last Name is required");
-    final email = v['email'] ?? '';
-    if (email.isEmpty ||
-        !RegExp(r'^[\w.%+-]+@[\w.-]+\.[a-zA-Z]{2,}$').hasMatch(email)) {
-      return _error("Enter a valid email address");
+    final email = form.email.text.trim();
+    if (!RegExp(r'^[\w.%+-]+@[\w.-]+\.[a-zA-Z]{2,}$').hasMatch(email)) {
+      return _error("Enter valid email");
     }
 
-    if (!v['email']!.contains('@')) return _error("Valid email is required");
-    if (v['companyName']?.isEmpty ?? true) {
+    if (form.companyName.text.isEmpty)
       return _error("Company Name is required");
-    }
-    if (v['companyAddress']?.isEmpty ?? true) {
+    if (form.companyAddress.text.isEmpty)
       return _error("Company Address is required");
-    }
-    if (v['city']?.isEmpty ?? true) return _error("City/Town is required");
+    if (form.city.text.isEmpty) return _error("City/Town is required");
 
     return true;
   }
@@ -207,6 +199,8 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
       _isSubmitting = true;
     });
     try {
+      final state = context.read<ProfileCubit>().state;
+
       final response = await ApiService.completeSignup(
         phone: widget.phoneNumber,
         otp: widget.existingUser != null ? null : widget.otp,
@@ -219,17 +213,15 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
         maaAssociativeNumber: form.massAssociation.text.trim().isEmpty
             ? null
             : form.massAssociation.text.trim(),
-        gender: context.read<ProfileCubit>().state.gender ?? "Male",
-        department: context.read<ProfileCubit>().state.department ?? "Others",
-        indiaState: context.read<ProfileCubit>().state.indiaState ?? "Delhi",
+        gender: state.gender ?? "Male",
+        department: state.department ?? "Others",
+        indiaState: state.indiaState ?? "Delhi",
         city: form.city.text.trim(),
         companyName: form.companyName.text.trim(),
         companyPhone: form.compPhone.text.trim().isEmpty
             ? null
             : form.compPhone.text.trim(),
-        companyAddress: form.companyAddress.text.trim().isEmpty
-            ? null
-            : form.companyAddress.text.trim(),
+        companyAddress: form.companyAddress.text.trim(),
         website: form.website.text.trim().isEmpty
             ? null
             : form.website.text.trim(),
@@ -244,8 +236,13 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
             : form.linkedIn.text.trim(),
         companyLogo: companyLogo,
         galleryImages: galleryImages.isEmpty ? null : galleryImages,
+
+        // 🔥 REQUIRED FIELDS BELOW
+        role: "user",
+        // aadharNumber: "1234567812345678",
       );
-      print("object,$response");
+
+      print(" api object,$response");
       if (response["success"] == true) {
         AppNotifications.showSuccess(
           context,
@@ -344,7 +341,9 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                   // 🎉 Reusable Gender Component
                   GenderSelector(
                     selected: state.gender,
-                    onChanged: (v) => setState(() => gender = v!),
+                    onChanged: (v) {
+                      context.read<ProfileCubit>().setGender(v!);
+                    },
                   ),
                   const SizedBox(height: 20),
 
@@ -353,7 +352,9 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                     hint: "Select Department",
                     value: state.department,
                     items: ["IT", "HR", "Finance", "Admin", "Marketing"],
-                    onChanged: (v) => setState(() => department = v!),
+                    onChanged: (v) {
+                      context.read<ProfileCubit>().setDepartment(v!);
+                    },
                   ),
 
                   const SizedBox(height: 30),
@@ -386,7 +387,9 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                     width: 380,
                     height: 150,
                     onPicked: (file) {
-                      if (file != null) print("Logo: ${file.path}");
+                      if (file != null) {
+                        setState(() => companyLogo = File(file.path));
+                      }
                     },
                   ),
                   const SizedBox(height: 20),
@@ -395,7 +398,9 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                     hint: "Select State",
                     value: state.indiaState,
                     items: ["Kolkata", "Delhi", "Goa"],
-                    onChanged: cubit.setIndiaState,
+                    onChanged: (v) {
+                      context.read<ProfileCubit>().setIndiaState(v!);
+                    },
                   ),
                   const SizedBox(height: 20),
                   AppInput(
@@ -584,37 +589,37 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
 
                   const SizedBox(height: 20),
 
-                  // Center(
-                  //   child: SizedBox(
-                  //     width: 180,
-                  //     child: OutlinedButton(
-                  //       onPressed: () => Navigator.push(
-                  //         context,
-                  //         MaterialPageRoute(
-                  //           builder: (_) => WelcomeBackScreen(),
-                  //         ),
-                  //       ),
-                  //       style: OutlinedButton.styleFrom(
-                  //         backgroundColor: Colors.red, // 🔴 Red background
-                  //         side: BorderSide.none, // Remove border
-                  //         padding: const EdgeInsets.symmetric(vertical: 14),
-                  //         shape: RoundedRectangleBorder(
-                  //           borderRadius: BorderRadius.circular(
-                  //             40,
-                  //           ), // 🔥 OVAL / PILL SHAPE
-                  //         ),
-                  //       ),
-                  //       child: const Text(
-                  //         "Logout",
-                  //         style: TextStyle(
-                  //           color: Colors.white, // ⚪ White text
-                  //           fontSize: 16,
-                  //           fontWeight: FontWeight.w700,
-                  //         ),
-                  //       ),
-                  //     ),
-                  //   ),
-                  // ),
+                  Center(
+                    child: SizedBox(
+                      width: 180,
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => WelcomeBackScreen(),
+                          ),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          backgroundColor: Colors.red, // 🔴 Red background
+                          side: BorderSide.none, // Remove border
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(
+                              40,
+                            ), // 🔥 OVAL / PILL SHAPE
+                          ),
+                        ),
+                        child: const Text(
+                          "Logout",
+                          style: TextStyle(
+                            color: Colors.white, // ⚪ White text
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: 30),
                 ],
               ),

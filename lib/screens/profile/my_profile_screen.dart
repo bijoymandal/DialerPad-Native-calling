@@ -129,6 +129,7 @@ class MyProfileScreen extends StatelessWidget {
           // _detailRow("facebook", user.socialLinks.map()),
           // _detailRow("Company Phone", user.companyPhone),
           // _detailRow("Address", user.address, isLast: true),
+          _buildPremiumToggle(context, user),
           const SizedBox(height: 40),
           // Social Links
           if (user.socialLinks.isNotEmpty) ...[
@@ -267,6 +268,60 @@ class MyProfileScreen extends StatelessWidget {
         return const Icon(Icons.link, color: Colors.grey);
     }
   }
+}
+
+class TogglePremiumStatus extends ProfileEvent {
+  final bool isPremium;
+  TogglePremiumStatus({required this.isPremium});
+}
+
+Widget _buildPremiumToggle(BuildContext context, UserModel user) {
+  return Container(
+    padding: const EdgeInsets.symmetric(vertical: 14),
+    decoration: BoxDecoration(
+      border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
+    ),
+    child: Row(
+      children: [
+        const SizedBox(
+          width: 130,
+          child: Text(
+            "Premium",
+            style: TextStyle(color: Colors.grey, fontSize: 15),
+          ),
+        ),
+        Expanded(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              Text(
+                user.isPremium ? "Active" : "Inactive",
+                style: TextStyle(
+                  color: user.isPremium ? Colors.green : Colors.red,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 16,
+                ),
+              ),
+              const SizedBox(width: 12),
+
+              Switch(
+                value: user.isPremium,
+                activeColor: Colors.white,
+                activeTrackColor: Colors.green,
+                inactiveThumbColor: Colors.grey.shade300,
+                inactiveTrackColor: Colors.grey.shade400,
+                onChanged: (value) {
+                  context.read<ProfileBloc>().add(
+                    TogglePremiumStatus(isPremium: value),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 extension StringExtension on String {

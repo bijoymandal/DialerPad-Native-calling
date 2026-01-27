@@ -119,12 +119,12 @@ class ProfileAppBar extends StatelessWidget implements PreferredSizeWidget {
 
       actions: [
         const NotificationButton(),
-        IconButton(
-          onPressed: () => _logout(context),
-          icon: const Icon(Icons.logout, color: Colors.white),
-          tooltip: "Logout",
-        ),
-        const SizedBox(width: 8),
+        // IconButton(
+        //   onPressed: () => _logout(context),
+        //   icon: const Icon(Icons.logout, color: Colors.white),
+        //   tooltip: "Logout",
+        // ),
+        // const SizedBox(width: 8),
       ],
     );
   }
